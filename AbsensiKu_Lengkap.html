@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AbsensiKu — Absensi Karyawan</title>
+<style>
+:root{--green:#16834a;--dark:#105d36;--pale:#eaf8ef;--text:#193328;--muted:#6b7d73;--line:#dce9e0;--red:#c0392b;--gold:#9a6700}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f3f8f4;color:var(--text)}
+header{background:linear-gradient(135deg,#11683a,#20a45b);color:#fff;padding:25px 18px 34px}
+.top{max-width:1000px;margin:auto;display:flex;align-items:center;gap:12px}.logo{width:48px;height:48px;border-radius:15px;background:#ffffff26;display:grid;place-items:center;font-size:26px}
+h1{font-size:25px;margin:0 0 5px}.subtitle{margin:0;opacity:.9;font-size:14px}
+main{max-width:1000px;margin:-18px auto 35px;padding:0 14px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 8px 25px #164a2710;margin-bottom:16px}
+.card h2{font-size:18px;margin:0 0 7px}.hint{font-size:13px;color:var(--muted);line-height:1.5;margin:0 0 18px}
+label{display:block;font-weight:700;font-size:13px;margin:13px 0 7px}
+input{width:100%;border:1px solid #cddbd1;border-radius:10px;padding:12px 13px;font-size:15px;outline:none;background:#fff}
+input:focus{border-color:var(--green);box-shadow:0 0 0 3px #16834a18}
+.buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+button{border:0;border-radius:10px;padding:12px 10px;font-weight:700;font-size:14px;cursor:pointer;transition:.15s}
+button:active{transform:scale(.98)}button:disabled{opacity:.45;cursor:not-allowed}
+.primary{background:var(--green);color:white}.secondary{background:#e6f5eb;color:var(--dark)}.outline{background:#fff;color:var(--green);border:1px solid #9ccfaf}.danger{background:#fff0ee;color:var(--red)}
+.status{display:none;margin-top:13px;border-radius:10px;padding:11px 12px;font-size:13px;line-height:1.45}.status.show{display:block}.ok{background:#e8f7ed;color:#11683a}.err{background:#fff0ee;color:#a12c22}.info{background:#fff7df;color:#775500}
+.statrow{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}.stat{background:#fff;border:1px solid var(--line);border-radius:14px;padding:15px}.stat span{font-size:12px;color:var(--muted)}.stat strong{display:block;font-size:24px;margin-top:5px;color:var(--dark)}
+.tablewrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:600px}th,td{text-align:left;padding:12px 10px;border-bottom:1px solid #edf2ee;font-size:13px}th{color:#62766a;background:#f7faf7;font-size:12px}td{line-height:1.45}.badge{display:inline-block;padding:5px 8px;border-radius:99px;font-size:11px;font-weight:700;background:#e6f5eb;color:#126a3b}.badge.out{background:#fff1d6;color:#885c00}.empty{text-align:center;color:var(--muted);padding:28px 10px}
+.rowhead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}.rowhead h2{margin:0}.smallbtn{padding:8px 10px;font-size:12px}
+footer{text-align:center;color:#718277;font-size:12px;padding:0 15px 25px;line-height:1.6}
+.note{border-left:4px solid #e0ad32;background:#fff8e4;border-radius:8px;padding:12px;font-size:12px;color:#6b530c;line-height:1.5;margin-top:14px}
+@media(max-width:700px){.grid{grid-template-columns:1fr}.statrow{gap:7px}.stat{padding:12px}.stat strong{font-size:21px}header{padding-top:22px}.card{padding:16px}h1{font-size:22px}}
+</style>
+</head>
+<body>
+<header><div class="top"><div class="logo">✓</div><div><h1>AbsensiKu</h1><p class="subtitle">Aplikasi Absensi Karyawan yang Praktis</p></div></div></header>
+<main>
+  <div class="statrow">
+    <div class="stat"><span>Total catatan hari ini</span><strong id="todayCount">0</strong></div>
+    <div class="stat"><span>Sudah absen masuk</span><strong id="presentCount">0</strong></div>
+    <div class="stat"><span>Sudah absen pulang</span><strong id="finishedCount">0</strong></div>
+  </div>
+  <div class="grid">
+    <section class="card">
+      <h2>📝 Form Absensi</h2>
+      <p class="hint">Masukkan ID dan nama karyawan, lalu pilih jenis absensi.</p>
+      <form id="attendanceForm">
+        <label for="employeeId">ID Karyawan</label>
+        <input id="employeeId" name="employeeId" placeholder="Contoh: KRY001" maxlength="30" required>
+        <label for="employeeName">Nama Lengkap</label>
+        <input id="employeeName" name="employeeName" placeholder="Masukkan nama karyawan" maxlength="80" required>
+        <div class="buttons">
+          <button class="primary" type="button" id="checkInBtn">🟢 Absen Masuk</button>
+          <button class="secondary" type="button" id="checkOutBtn">🏁 Absen Pulang</button>
+        </div>
+        <div id="formStatus" class="status" role="status"></div>
+      </form>
+      <div class="note"><b>Catatan:</b> Versi demo ini menyimpan data di browser/perangkat yang digunakan. Untuk database online yang bisa dibuka bersama dari HP lain, perlu dihubungkan ke Google Sheets dan diterbitkan melalui Google Apps Script.</div>
+    </section>
+    <section class="card">
+      <h2>🔎 Cari Riwayat</h2>
+      <p class="hint">Cari catatan berdasarkan ID atau nama karyawan. Kosongkan kolom untuk menampilkan semua catatan.</p>
+      <label for="searchInput">ID atau nama karyawan</label>
+      <input id="searchInput" placeholder="Contoh: KRY001 atau Siti">
+      <div class="buttons">
+        <button class="primary" id="searchBtn" type="button">Cari Riwayat</button>
+        <button class="outline" id="resetSearchBtn" type="button">Tampilkan Semua</button>
+      </div>
+      <div id="searchStatus" class="status" role="status"></div>
+    </section>
+  </div>
+  <section class="card">
+    <div class="rowhead"><h2>📋 Data Absensi</h2><button id="exportBtn" class="outline smallbtn" type="button">Unduh CSV</button></div>
+    <div class="tablewrap"><table><thead><tr><th>Tanggal</th><th>ID Karyawan</th><th>Nama</th><th>Jam Masuk</th><th>Jam Pulang</th><th>Status</th></tr></thead><tbody id="recordsBody"></tbody></table></div>
+    <div id="emptyState" class="empty">Belum ada data absensi. Silakan lakukan absensi pertama.</div>
+    <div class="buttons" style="max-width:420px"><button class="danger" id="clearBtn" type="button">Hapus Semua Data Demo</button></div>
+    <div id="tableStatus" class="status" role="status"></div>
+  </section>
+</main>
+<footer>AbsensiKu • Demo aplikasi absensi karyawan<br>Data demo tersimpan pada browser/perangkat ini.</footer>
+<script>
+const STORAGE_KEY = "absensiku_records_v1";
+let currentQuery = "";
+const $ = id => document.getElementById(id);
+function loadRecords(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]")}catch(e){return []}}
+function saveRecords(records){localStorage.setItem(STORAGE_KEY,JSON.stringify(records))}
+function nowParts(){const d=new Date();return {date:d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"),time:d.toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false})}}
+function showStatus(id,msg,type){const el=$(id);el.textContent=msg;el.className="status show "+type}
+function hideStatus(id){$(id).className="status"}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function submitAttendance(kind){
+ const id=$("employeeId").value.trim().toUpperCase(), name=$("employeeName").value.trim();
+ if(!id||!name){showStatus("formStatus","Isi ID Karyawan dan Nama Lengkap terlebih dahulu.","err");return}
+ const {date,time}=nowParts();const records=loadRecords();let rec=records.find(r=>r.id===id&&r.date===date);
+ if(kind==="in"){
+   if(rec&&rec.checkIn){showStatus("formStatus","Karyawan ini sudah melakukan absen masuk hari ini pada "+rec.checkIn+".","err");return}
+   if(!rec){rec={id,name,date,checkIn:time,checkOut:""};records.push(rec)}else{rec.name=name;rec.checkIn=time}
+   saveRecords(records);showStatus("formStatus","Berhasil! Absen masuk tercatat pukul "+time+".","ok");
+ }else{
+   if(!rec||!rec.checkIn){showStatus("formStatus","Belum ada absen masuk hari ini. Lakukan absen masuk terlebih dahulu.","err");return}
+   if(rec.checkOut){showStatus("formStatus","Absen pulang sudah tercatat pada "+rec.checkOut+".","err");return}
+   rec.name=name;rec.checkOut=time;saveRecords(records);showStatus("formStatus","Berhasil! Absen pulang tercatat pukul "+time+".","ok");
+ }
+ $("employeeId").value=id;$("employeeName").value=name;render();
+}
+function render(){
+ const records=loadRecords().sort((a,b)=>(b.date+b.checkIn).localeCompare(a.date+a.checkIn));
+ const today=nowParts().date, todayRecords=records.filter(r=>r.date===today);
+ $("todayCount").textContent=todayRecords.length;$("presentCount").textContent=todayRecords.filter(r=>r.checkIn).length;$("finishedCount").textContent=todayRecords.filter(r=>r.checkOut).length;
+ const q=currentQuery.toLowerCase();
+ const shown=records.filter(r=>!q||r.id.toLowerCase().includes(q)||r.name.toLowerCase().includes(q));
+ $("recordsBody").innerHTML=shown.map(r=>`<tr><td>${escapeHtml(r.date)}</td><td><b>${escapeHtml(r.id)}</b></td><td>${escapeHtml(r.name)}</td><td>${escapeHtml(r.checkIn||"—")}</td><td>${escapeHtml(r.checkOut||"—")}</td><td><span class="badge ${r.checkOut?"out":""}">${r.checkOut?"Selesai":r.checkIn?"Sudah Masuk":"Belum Absen"}</span></td></tr>`).join("");
+ $("emptyState").style.display=shown.length?"none":"block";
+ if(q&&shown.length===0)$("emptyState").textContent="Tidak ada riwayat yang cocok dengan pencarian.";
+ else $("emptyState").textContent="Belum ada data absensi. Silakan lakukan absensi pertama.";
+}
+$("checkInBtn").addEventListener("click",()=>submitAttendance("in"));
+$("checkOutBtn").addEventListener("click",()=>submitAttendance("out"));
+$("searchBtn").addEventListener("click",()=>{currentQuery=$("searchInput").value.trim();render();showStatus("searchStatus",currentQuery?"Menampilkan hasil pencarian untuk: "+currentQuery:"Menampilkan semua riwayat.","ok")});
+$("resetSearchBtn").addEventListener("click",()=>{$("searchInput").value="";currentQuery="";render();hideStatus("searchStatus")});
+$("searchInput").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("searchBtn").click()}});
+$("exportBtn").addEventListener("click",()=>{
+ const rows=[["Tanggal","ID Karyawan","Nama","Jam Masuk","Jam Pulang","Status"],...loadRecords().map(r=>[r.date,r.id,r.name,r.checkIn,r.checkOut,r.checkOut?"Selesai":"Belum pulang"])];
+ const csv=rows.map(row=>row.map(v=>'"'+String(v??"").replace(/"/g,'""')+'"').join(",")).join("\r\n");
+ const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8;"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="data-absensi.csv";a.click();URL.revokeObjectURL(url);showStatus("tableStatus","File CSV berhasil disiapkan untuk diunduh.","ok");
+});
+$("clearBtn").addEventListener("click",()=>{
+ if(!loadRecords().length){showStatus("tableStatus","Belum ada data yang perlu dihapus.","info");return}
+ if(confirm("Yakin ingin menghapus semua data demo di browser ini? Tindakan ini tidak dapat dibatalkan.")){localStorage.removeItem(STORAGE_KEY);currentQuery="";render();showStatus("tableStatus","Semua data demo di browser ini telah dihapus.","ok")}
+});
+render();
+</script>
+</body>
+</html>
